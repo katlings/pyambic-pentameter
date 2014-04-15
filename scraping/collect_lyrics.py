@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 
 from bs4 import BeautifulSoup
 from urllib import request
@@ -33,9 +34,10 @@ def get_lyrics(song_link_list):
     lyrics_html = fetch_page(page)
     title, artist, lyrics = parse_lyrics(lyrics_html)
 
-    all_lyrics[title] = {}
-    all_lyrics[title]['artist'] = artist
-    all_lyrics[title]['lyrics'] = lyrics
+    if title and lyrics:
+      all_lyrics[title] = {}
+      all_lyrics[title]['artist'] = artist
+      all_lyrics[title]['lyrics'] = lyrics
 
   return all_lyrics
 
@@ -44,7 +46,7 @@ def run():
   song_link_list = parse_song_links(song_index_html)
   song_lyrics = get_lyrics(song_link_list)
 
-  with open('beatles_lyrics.json', 'w') as f:
+  with open(os.path.join('..', 'data', 'beatles_lyrics.json'), 'w') as f:
     json.dump(song_lyrics, f)
 
 if __name__ == '__main__':
