@@ -9,8 +9,10 @@ from urllib import request
 BASE_URL = 'http://www.beatleslyrics.org/index_files/'
 SONG_INDEX_PAGE = 'Page13763.htm'
 
+LYRICS_FILE_PATH = os.path.join('..', 'data', 'beatles_lyrics.json')
+
 def fetch_page(page):
-  response = request.urlopen(BASE_URL + page)
+  response = request.urlopen(page)
   return response.read()
 
 def parse_song_links(song_index_html):
@@ -31,23 +33,23 @@ def get_lyrics(song_link_list):
   all_lyrics = {}
 
   for page in song_link_list:
-    lyrics_html = fetch_page(page)
+    lyrics_html = fetch_page(BASE_URL + page)
     title, artist, lyrics = parse_lyrics(lyrics_html)
 
-    if title and lyrics:
-      all_lyrics[title] = {}
-      all_lyrics[title]['artist'] = artist
-      all_lyrics[title]['lyrics'] = lyrics
+    if title and artist and lyrics:
+      if title.startswith("This video"):  # dammit
+        continue
+      all_lyrics[title] = dict(artist=artist, lyrics=lyrics)
 
   return all_lyrics
 
-def run():
-  song_index_html = fetch_page(SONG_INDEX_PAGE)
+def scrape_and_save_lyrics():
+  song_index_html = fetch_page(BASE_URL + SONG_INDEX_PAGE)
   song_link_list = parse_song_links(song_index_html)
   song_lyrics = get_lyrics(song_link_list)
 
-  with open(os.path.join('..', 'data', 'beatles_lyrics.json'), 'w') as f:
+  with open(LYRICS_FILE_PATH, 'w') as f:
     json.dump(song_lyrics, f)
 
 if __name__ == '__main__':
-  run()
+  scrape_and_save_lyrics()
