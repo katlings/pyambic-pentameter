@@ -35,9 +35,11 @@ def compare_leads_and_writers():
     else:
       # print("Nope! %s, penned by %s, sung by %s" % (song, writer, lead))
       mismatches.append(song)
-      if writer not in BEATLES:
+      if person_of_interest(writer) not in BEATLES:
         # print("But, not written by a Beatle")
         not_beatles.append(song)
+      # else:
+      #   print("Nope! %s, penned by %s, sung by %s" % (song, writer, lead))
 
   num_matched = len(matches)
   num_mismatched = len(mismatches)
