@@ -151,6 +151,11 @@ def scansion_matches(a, b):
     return len(a) == len(b) and all(syllables_match(a[i], b[i]) for i in range(len(a)))
 
 
+def fulfills_scansion(word, desired_fp):
+    syl_fp = syllable_fingerprint(word)
+    return len(syl_fp) == len(desired_fp) and scansion_matches(syl_fp, desired_fp)
+
+
 def valid_option(word, desired_fp):
     syl_fp = syllable_fingerprint(word)
 

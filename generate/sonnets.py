@@ -3,12 +3,13 @@
 ## SONNETS
 # rhyme scheme: abab cdcd efef gg
 
+from functools import wraps
 import json
 import random
 
 from nltk.corpus import cmudict
 
-from syllables import rhyme_fingerprint, potential_iambic_seed, remaining_scheme, valid_option
+from syllables import rhyme_fingerprint, potential_iambic_seed, remaining_scheme, scansion_matches, valid_option, fulfills_scansion
 
 rd = cmudict.dict()
 
@@ -75,6 +76,64 @@ def generate_line(word, d):
         syl_map = remaining_scheme(word, syl_map)
     print(' '.join(line[::-1]))
     return ' '.join(line[::-1])
+
+
+def memoize(f):
+    cache = {}
+
+    @wraps(f)
+    def retrieve_or_store(a, b, *args, **kwargs):
+        if not (a, b) in cache:
+            cache[(a, b)] = f(a, b, *args, **kwargs)
+        return cache[(a, b)]
+
+    return retrieve_or_store
+
+
+@memoize
+def find_all(word, scansion_pattern, d):
+    if fulfills_scansion(word, scansion_pattern):
+        # success!
+        return [[word]]
+    if not valid_option(word, scansion_pattern):
+        return None
+
+    options = set([w for w in d[word] if valid_option(w, scansion_pattern)])
+    if not options:
+        # failure!
+        return None
+
+    completes = []
+    # otherwise, we need to keep looking
+    for option in options:
+        need_to_find = remaining_scheme(option, scansion_pattern)
+        all_working = find_all(option, need_to_find, d)
+        if all_working is not None:
+            completes.extend([[word] + c for c in all_working])
+    return completes
+
+
+@memoize
+def find_with_backtrack(word, scansion_pattern, d):
+    if fulfills_scansion(word, scansion_pattern):
+        # success!
+        return [[word]]
+    if not valid_option(word, scansion_pattern):
+        return None
+
+    options = set([w for w in d[word] if valid_option(w, scansion_pattern)])
+    if not options:
+        # failure!
+        return None
+
+    completes = []
+    # otherwise, we need to keep looking
+    for option in options:
+        need_to_find = remaining_scheme(option, scansion_pattern)
+        all_working = find_with_backtrack(option, need_to_find, d)
+        if all_working is not None:
+            completes.extend([[word] + c for c in all_working])
+    return completes
 
 
 def generate_sonnet(d, seeds):
