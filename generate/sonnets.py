@@ -7,6 +7,9 @@ import json
 import random
 
 from nltk.corpus import cmudict
+
+from syllables import rhyme_fingerprint, potential_iambic_seed, remaining_scheme, valid_option
+
 rd = cmudict.dict()
 
 
@@ -14,56 +17,6 @@ def get_lyrics():
     with open('../data/beatles_lyrics.json', 'r') as f:
         lyrics = json.loads(f.read())
     return lyrics
-
-
-def rhyme_fingerprint(word):
-    word = word.lower()
-    if not word in rd:
-        return None
-
-    # for now, just grab the last vowel sound and whatever occurs after it
-    # then we can worry about slant rhymes and multisyllable rhymes and shit later
-    # and also multiple pronunciations
-    sounds = rd[word][0]
-    fingerprint = []
-
-    for sound in sounds[::-1]:
-        fingerprint.append(sound)
-        # digits designate emphasis in syllables; we've found a syllable,
-        # more or less
-        if '0' in sound or '1' in sound or '2' in sound:
-            break
-        
-    return tuple(fingerprint[::-1])
-
-
-def count_vowel_groups(word):
-    # this is a first order approximation of number of syllables.
-    # it won't be correct on  e.g. aria, Julia, praying, antiestablishment
-    vowels = 'aeiouy'
-    syllables = 0
-    last_seen_consonant = True
-    for letter in word:
-        if letter not in vowels:
-            last_seen_consonant = True
-        else:
-            syllables += last_seen_consonant
-            last_seen_consonant = False
-    # special case for last silent e
-    if len(word) >= 2 and word[-1] == 'e' and word[-2] not in vowels:
-        syllables -= 1
-    return syllables
-
-
-def count_syllables(word):
-    if not word in rd:
-        return count_vowel_groups(word)
-    sounds = rd[word][0]
-    syllables = 0
-    for s in sounds:
-        if '0' in s or '1' in s or '2' in s:
-            syllables += 1
-    return syllables
 
 
 def build_lyrics_corpus():
@@ -87,46 +40,54 @@ def build_lyrics_corpus():
                 d[word] = []
             d[word].append(lyrics[i+1])
 
-    rhymes = {}
+    # we can seed off of words that are valid in iambic pentameter - that is, they
+    # can end with a stressed syllable - and have at least one matching rhyme
+    seeds = {}
     for word in word_set:
+        if not potential_iambic_seed(word):
+            continue
         rf = rhyme_fingerprint(word)
         if rf is None:
             continue
-        if not rf in rhymes:
-            rhymes[rf] = []
-        rhymes[rf].append(word)
+        if not rf in seeds:
+            seeds[rf] = []
+        seeds[rf].append(word)
 
-    multi_rhymes = {key:value for key, value in rhymes.items() if len(value) >= 2}
+    valid_seeds = {key:value for key, value in seeds.items() if len(value) >= 2}
 
-    return d, multi_rhymes
+    return d, valid_seeds
 
 
-def generate_line(seed, d):
-    line = []
-    word = seed
-    syllables = 0
+def generate_line(word, d):
+    line = [word]
+    syl_map = remaining_scheme(word, '01' * 5)
     # we're looking for 10 syllables
     # TODO - iambic syllables !!!!!!
     # may involve backtrack
-    while syllables < 10:
-        syllables += count_syllables(word)
+    while syl_map:
+        options = [word for word in d[word] if valid_option(word, syl_map)]
+        random.shuffle(options)
+        if not options:
+            print('oops')
+            break
+        word = random.choice(options)
         line.append(word)
-        word = random.choice(d[word])
+        syl_map = remaining_scheme(word, syl_map)
+    print(' '.join(line[::-1]))
     return ' '.join(line[::-1])
 
 
-def generate_sonnet(d, rhymes):
+def generate_sonnet(d, seeds):
     # start by picking 7 pairs of rhyming words
     # then generate backwards for the right number of syllables
-    # then worry about emphasis later
 
-    rhyme_sounds = random.sample(list(rhymes.keys()), 7)
+    rhyme_sounds = random.sample(list(seeds.keys()), 7)
 
     sonnet = []
 
     for rhyme in rhyme_sounds:
-        seeds = random.sample(rhymes[rhyme], 2)
-        for seed in seeds:
+        chosen = random.sample(seeds[rhyme], 2)
+        for seed in chosen:
             sonnet.append(generate_line(seed, d))
     
     # now shuffle the lines so the rhyme scheme is right
@@ -138,8 +99,8 @@ def generate_sonnet(d, rhymes):
 
 
 def main():
-    d, rhymes = build_lyrics_corpus()
-    sonnet = generate_sonnet(d, rhymes)
+    d, seeds = build_lyrics_corpus()
+    sonnet = generate_sonnet(d, seeds)
     print('\n'.join(sonnet))
 
 
