@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
-## SONNETS
-# rhyme scheme: abab cdcd efef gg
-
 from functools import wraps
 import json
 import random
 
 import click
 
-from syllables import rhyme_fingerprint, potential_iambic_seed, remaining_scheme, scansion_matches, valid_option, fulfills_scansion
+from syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, potential_iambic_seed, valid_option
 
 
 def get_lyrics():
@@ -33,24 +30,33 @@ def get_sonnets():
 def build_corpus(data):
     # data is a list of seed strings; each chunk of text may be unrelated (e.g. lyrics from different songs)
     d = {}
+    reverse_d = {}
     word_set = set()
 
-    # we are gonna build a backwards markov, so we can start with a rhyme and
-    # fill in the lines from there
     for text in data:
         words = [word.strip('.,()-?!":').lower() for word in text.split() if word.strip('.,()-?!":')]
         word_set.update(words)
-        words.reverse()
 
         for i, word in enumerate(words[:-1]):
             if not word in d:
                 d[word] = []
             d[word].append(words[i+1])
 
-    # we can seed off of words that are valid in iambic pentameter - that is, they
-    # can end with a stressed syllable - and have at least one matching rhyme
+
+        # we are also gonna build a backwards markov, so we can start with a rhyme and
+        # fill in the lines from there
+        words.reverse()
+
+        for i, word in enumerate(words[:-1]):
+            if not word in reverse_d:
+                reverse_d[word] = []
+            reverse_d[word].append(words[i+1])
+
+    # we can seed off of words that have at least one matching rhyme
     seeds = {}
     for word in word_set:
+        # we could reduce this set further by checking for the right stress for the
+        # pattern, but iambic isn't necessarily the right one
 #       if not potential_iambic_seed(word):
 #           continue
         rf = rhyme_fingerprint(word)
@@ -60,12 +66,12 @@ def build_corpus(data):
             seeds[rf] = []
         seeds[rf].append(word)
 
-    valid_seeds = {key:value for key, value in seeds.items() if len(value) >= 2}
+    rhyme_seeds = {key:value for key, value in seeds.items() if len(value) >= 2}
 
-    return d, valid_seeds
+    return d, reverse_d, rhyme_seeds
 
 
-def find_with_backtrack(word, scansion_pattern, d):
+def find_scansion_with_backtrack(word, scansion_pattern, d):
     if fulfills_scansion(word, scansion_pattern):
         # success!
         return [word]
@@ -82,7 +88,7 @@ def find_with_backtrack(word, scansion_pattern, d):
     options = list(options)
     random.shuffle(options)
     for option in options:
-        rest = find_with_backtrack(option, rest_pattern, d)
+        rest = find_scansion_with_backtrack(option, rest_pattern, d)
         if rest is not None:
             # a good way to debug
             #print(' '.join([word] + rest))
@@ -92,10 +98,34 @@ def find_with_backtrack(word, scansion_pattern, d):
     return None
 
 
+def find_syllables_with_backtrack(word, num_syllables, d):
+    word_syllables = count_syllables(word)
+    if word_syllables == num_syllables:
+        # success!
+        return [word]
+    if word_syllables > num_syllables:
+        return None
+
+    remaining_syllables = num_syllables - word_syllables
+    options = set([w for w in d[word] if count_syllables(w) <= remaining_syllables])
+    if not options:
+        # failure!
+        return None
+
+    options = list(options)
+    random.shuffle(options)
+    for option in options:
+        rest = find_syllables_with_backtrack(option, remaining_syllables, d)
+        if rest is not None:
+            return [word] + rest
+
+    return None
+
+
 def generate_pattern(seed_words, pattern, d, k=2):
     lines = []
     for seed in seed_words:
-        line = find_with_backtrack(seed, pattern, d)
+        line = find_scansion_with_backtrack(seed, pattern, d)
         if line is not None:
             lines.append(' '.join(line[::-1]))
         if len(lines) == k:
@@ -106,6 +136,17 @@ def generate_pattern(seed_words, pattern, d, k=2):
 
 def generate_iambic(seed_words, d, k=2, meter=5):
     return generate_pattern(seed_words, '01'*meter, d, k)
+
+
+def generate_syllables(num_syllables, d, preseed=None):
+    line = None
+    while line is None:
+        if preseed is None:
+            seed = random.choice(list(d.keys()))
+        else:
+            seed = random.choice(d[preseed])
+        line = find_syllables_with_backtrack(seed, num_syllables, d)
+    return ' '.join(line)
 
 
 def generate_sonnet(d, seeds):
@@ -125,11 +166,12 @@ def generate_sonnet(d, seeds):
     sonnet[5], sonnet[6] = sonnet[6], sonnet[5]
     sonnet[9], sonnet[10] = sonnet[10], sonnet[9]
     
+    # and add breaks between stanzas
     sonnet.insert(4, '')
     sonnet.insert(9, '')
     sonnet.insert(14, '')
 
-    return sonnet
+    return '\n'.join(sonnet)
 
 
 def generate_limerick(d, seeds):
@@ -145,13 +187,23 @@ def generate_limerick(d, seeds):
 
     limerick = triplet[:2] + couplet + [triplet[2]]
 
-    return limerick
+    return '\n'.join(limerick)
+
+
+def generate_haiku(d):
+    haiku = []
+
+    haiku.append(generate_syllables(5, d))
+    haiku.append(generate_syllables(7, d, preseed=haiku[-1].split()[-1]))
+    haiku.append(generate_syllables(5, d, preseed=haiku[-1].split()[-1]))
+
+    return '\n'.join(haiku)
 
 
 @click.command()
 @click.argument('source')
-@click.argument('poem')
-def main(source, poem):
+@click.argument('poem_type')
+def main(source, poem_type):
     data = None
     if source == 'craigslist':
         data = get_craigslist()
@@ -160,19 +212,24 @@ def main(source, poem):
     elif source == 'shakespeare':
         data = get_sonnets()
     if data is None:
+        print('Valid sources are craigslist, beatles, and shakespeare')
         return
 
-    d, seeds = build_corpus(data)
+    d, reverse_d, seeds = build_corpus(data)
 
-    if poem == 'sonnet':
-        sonnet = '\n'.join(generate_sonnet(d, seeds))
-        print(sonnet)
-        return sonnet
-    elif poem == 'limerick':
-        limerick = '\n'.join(generate_limerick(d, seeds))
-        print(limerick)
-        return limerick
+    poem = None
+    if poem_type == 'sonnet':
+        poem = generate_sonnet(reverse_d, seeds)
+    elif poem_type == 'limerick':
+        poem = generate_limerick(reverse_d, seeds)
+    elif poem_type == 'haiku':
+        poem = generate_haiku(d)
+    if poem is None:
+        print ('Valid poem types are sonnet, limerick, haiku')
+        return
 
+    print(poem)
+    return poem
 
 
 if __name__ == '__main__':

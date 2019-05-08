@@ -16,6 +16,12 @@ def count_vowel_groups(word):
     # this is a first order approximation of number of syllables.
     # it won't be correct on  e.g. aria, Julia, praying, antiestablishment
     vowels = 'aeiouy'
+
+    # special case for no vowels - maybe it's an acronym. we can say each
+    # letter individually and they're probably all one syllable. fuck w anyway
+    if all(vowel not in word for vowel in vowels):
+        return len(word)
+
     syllables = 0
     last_seen_consonant = True
     for letter in word:
@@ -24,9 +30,12 @@ def count_vowel_groups(word):
         else:
             syllables += last_seen_consonant
             last_seen_consonant = False
+
     # special case for last silent e
+    # it's not quite worth special casing -ed
     if len(word) >= 2 and word[-1] == 'e' and word[-2] not in vowels:
         syllables -= 1
+
     return syllables
 
 
@@ -53,14 +62,6 @@ def get_syllable_stress(word):
 
     if not word in d:
         syllables = count_vowel_groups(word)
-        # try all combinations of syllables. why not?
-        #       -> because it's slowwww
-        # this will just fingerprint to 'xxxx' anyway though.
-#       for i in range(2**syllables):
-#           pattern = format(i, 'b').zfill(syllables)
-#           if pattern == '11' or not '11' in pattern:  # filter out two stresses in a row - it's rare at best
-#               stresses_options.add(pattern)
-
         # return '000' and '111' so it fingerprints to 'xxx'
         stresses_options.add('0'*syllables)
         stresses_options.add('1'*syllables)
@@ -109,24 +110,6 @@ def get_sequence_fingerprint(sequence):
     return ''.join(fps)
 
 
-def count_vowel_groups(word):
-    # this is a first order approximation of number of syllables.
-    # it won't be correct on  e.g. aria, Julia, praying, antiestablishment
-    vowels = 'aeiouy'
-    syllables = 0
-    last_seen_consonant = True
-    for letter in word:
-        if letter not in vowels:
-            last_seen_consonant = True
-        else:
-            syllables += last_seen_consonant
-            last_seen_consonant = False
-    # special case for last silent e
-    if len(word) >= 2 and word[-1] == 'e' and word[-2] not in vowels:
-        syllables -= 1
-    return syllables
-
-
 def rhyme_fingerprint(word):
     word = word.lower()
     if not word in d:
@@ -158,18 +141,11 @@ def scansion_matches(a, b):
 
 def fulfills_scansion(word, desired_fp):
     syl_fp = syllable_fingerprint(word)
-#   if len(desired_fp) == 1 and len(syl_fp) == 1:
-#       return True
     return len(syl_fp) == len(desired_fp) and scansion_matches(syl_fp, desired_fp)
 
 
 def valid_option(word, desired_fp):
     syl_fp = syllable_fingerprint(word)
-
-#   if len(syl_fp) == 1:
-#       # be a little lenient with one syllable words
-#       return True
-
     return len(syl_fp) <= len(desired_fp) and scansion_matches(syl_fp, desired_fp[-len(syl_fp):])
 
 
