@@ -17,29 +17,31 @@ rd = cmudict.dict()
 def get_lyrics():
     with open('../data/beatles_lyrics.json', 'r') as f:
         lyrics = json.loads(f.read())
-    return lyrics
+    return [' '.join(song['lyrics']) for song in lyrics.values()]
 
 
-def build_lyrics_corpus():
+def get_craigslist():
+    with open('../data/craigslist.txt', 'r') as f:
+        text = f.read()
+    return [text]
+
+
+def build_corpus(data):
+    # data is a list of seed strings; each chunk of text may be unrelated (e.g. lyrics from different songs)
     d = {}
-    data = get_lyrics()
     word_set = set()
 
     # we are gonna build a backwards markov, so we can start with a rhyme and
     # fill in the lines from there
-    for song, song_data in data.items():
-        lyrics = []
-        for line in song_data['lyrics']:
-            lyrics.extend(line.split())
-        
-        lyrics = [word.strip('.,()-?!":').lower() for word in lyrics if word.strip('.,()-?!":')]
-        word_set.update(lyrics)
-        lyrics.reverse()
+    for text in data:
+        words = [word.strip('.,()-?!":').lower() for word in text.split() if word.strip('.,()-?!":')]
+        word_set.update(words)
+        words.reverse()
 
-        for i, word in enumerate(lyrics[:-1]):
+        for i, word in enumerate(words[:-1]):
             if not word in d:
                 d[word] = []
-            d[word].append(lyrics[i+1])
+            d[word].append(words[i+1])
 
     # we can seed off of words that are valid in iambic pentameter - that is, they
     # can end with a stressed syllable - and have at least one matching rhyme
@@ -86,6 +88,8 @@ def find_with_backtrack(word, scansion_pattern, d):
     for option in options:
         rest = find_with_backtrack(option, rest_pattern, d)
         if rest is not None:
+            # a good way to debug
+            #print(' '.join([word] + rest))
             return [word] + rest
 
     # whoops
@@ -165,7 +169,9 @@ def generate_sonnet(d, seeds):
 
 
 def main():
-    d, seeds = build_lyrics_corpus()
+    #data = get_craigslist()
+    data = get_lyrics()
+    d, seeds = build_corpus(data)
     sonnet = generate_sonnet(d, seeds)
     print('\n'.join(sonnet))
 

@@ -52,13 +52,18 @@ def get_syllable_stress(word):
         word = word + 'g'
 
     if not word in d:
-        # try all combinations of syllables. why not?
-        # this will just fingerprint to 'xxxx' anyway though.
         syllables = count_vowel_groups(word)
-        for i in range(2**syllables):
-            pattern = format(i, 'b').zfill(syllables)
-            if pattern == '11' or not '11' in pattern:  # filter out two stresses in a row - it's rare at best
-                stresses_options.add(pattern)
+        # try all combinations of syllables. why not?
+        #       -> because it's slowwww
+        # this will just fingerprint to 'xxxx' anyway though.
+#       for i in range(2**syllables):
+#           pattern = format(i, 'b').zfill(syllables)
+#           if pattern == '11' or not '11' in pattern:  # filter out two stresses in a row - it's rare at best
+#               stresses_options.add(pattern)
+
+        # return '000' and '111' so it fingerprints to 'xxx'
+        stresses_options.add('0'*syllables)
+        stresses_options.add('1'*syllables)
     else:
         pronunciations = d[word]
         for p in pronunciations:
