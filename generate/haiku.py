@@ -77,10 +77,14 @@ def find_with_backtrack(word, num_syllables, d):
     return None
 
 
-def try_generate_line(num_syllables, d):
+def try_generate_line(num_syllables, d, preseed=None):
     line = None
     while line is None:
-        line = generate_line(random.choice(list(d.keys())), num_syllables, d)
+        if preseed is None:
+            seed = random.choice(list(d.keys()))
+        else:
+            seed = random.choice(d[preseed])
+        line = generate_line(seed, num_syllables, d)
     return line
 
 
@@ -90,16 +94,16 @@ def generate_haiku(d):
     haiku = []
 
     haiku.append(try_generate_line(5, d))
-    haiku.append(try_generate_line(7, d))
-    haiku.append(try_generate_line(5, d))
+    haiku.append(try_generate_line(7, d, preseed=haiku[-1].split()[-1]))
+    haiku.append(try_generate_line(5, d, preseed=haiku[-1].split()[-1]))
 
     return haiku
 
 
 def main():
     #data = get_craigslist()
-    #data = get_lyrics()
-    data = get_sonnets()
+    data = get_lyrics()
+    #data = get_sonnets()
     d = build_corpus(data)
     haiku = generate_haiku(d)
     print('\n'.join(haiku))
