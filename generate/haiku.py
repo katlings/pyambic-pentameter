@@ -105,8 +105,9 @@ def main():
     data = get_lyrics()
     #data = get_sonnets()
     d = build_corpus(data)
-    haiku = generate_haiku(d)
-    print('\n'.join(haiku))
+    haiku = '\n'.join(generate_haiku(d))
+    print(haiku)
+    return haiku
 
 
 if __name__ == '__main__':
