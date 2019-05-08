@@ -32,7 +32,7 @@ def build_lyrics_corpus():
         for line in song_data['lyrics']:
             lyrics.extend(line.split())
         
-        lyrics = [word.strip('.,()-?!').lower() for word in lyrics if word.strip('.,()-?!')]
+        lyrics = [word.strip('.,()-?!":').lower() for word in lyrics if word.strip('.,()-?!":')]
         word_set.update(lyrics)
         lyrics.reverse()
 
@@ -62,7 +62,7 @@ def build_lyrics_corpus():
 def generate_line(word, d):
     words = find_with_backtrack(word, '01'*5, d)
     if words is None:
-        print('Could not find a line with', word)
+        #print('Could not find a line with', word)
         return words
     return ' '.join(words[::-1])
 
@@ -127,27 +127,39 @@ def find_all(word, scansion_pattern, d):
     return completes
 
 
+def try_generate_lines(seed_words, d, k=2):
+    lines = []
+
+    for seed in seed_words:
+        line = generate_line(seed, d)
+        if line is not None:
+            lines.append(generate_line(seed, d))
+        if len(lines) == 2:
+            return lines
+
+    return None
+
+
 def generate_sonnet(d, seeds):
     # start by picking 7 pairs of rhyming words
     # then generate backwards for the right number of syllables
 
-    rhyme_sounds = random.sample(list(seeds.keys()), 7)
-
     sonnet = []
 
-    for rhyme in rhyme_sounds:
-        random.shuffle(seeds[rhyme])
-        lines = []
-        for seed in seeds[rhyme]:
-            lines.append(generate_line(seed, d))
-        if len(lines) < 2:
-            return None
-        sonnet.append(random.sample(lines, 2))
+    while len(sonnet) < 14:
+        rhyme_sound = random.choice(list(seeds.keys()))
+        lines = try_generate_lines(seeds[rhyme_sound], d)
+        if lines is not None:
+            sonnet.extend(lines)
 
     # now shuffle the lines so the rhyme scheme is right
     sonnet[1], sonnet[2] = sonnet[2], sonnet[1]
     sonnet[5], sonnet[6] = sonnet[6], sonnet[5]
     sonnet[9], sonnet[10] = sonnet[10], sonnet[9]
+    
+    sonnet.insert(4, '')
+    sonnet.insert(9, '')
+    sonnet.insert(14, '')
 
     return sonnet
 

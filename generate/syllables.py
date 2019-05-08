@@ -153,17 +153,17 @@ def scansion_matches(a, b):
 
 def fulfills_scansion(word, desired_fp):
     syl_fp = syllable_fingerprint(word)
-    if len(desired_fp) == 1 and len(syl_fp) == 1:
-        return True
+#   if len(desired_fp) == 1 and len(syl_fp) == 1:
+#       return True
     return len(syl_fp) == len(desired_fp) and scansion_matches(syl_fp, desired_fp)
 
 
 def valid_option(word, desired_fp):
     syl_fp = syllable_fingerprint(word)
 
-    if len(syl_fp) == 1:
-        # be a little lenient with one syllable words
-        return True
+#   if len(syl_fp) == 1:
+#       # be a little lenient with one syllable words
+#       return True
 
     return len(syl_fp) <= len(desired_fp) and scansion_matches(syl_fp, desired_fp[-len(syl_fp):])
 
