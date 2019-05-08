@@ -26,6 +26,12 @@ def get_craigslist():
     return [text]
 
 
+def get_sonnets():
+    with open('../data/shakespeare_sonnets.json', 'r') as f:
+        sonnets = json.loads(f.read())
+    return [sonnet for sonnet in sonnets.values()]
+
+
 def build_corpus(data):
     # data is a list of seed strings; each chunk of text may be unrelated (e.g. lyrics from different songs)
     d = {}
@@ -170,7 +176,8 @@ def generate_sonnet(d, seeds):
 
 def main():
     #data = get_craigslist()
-    data = get_lyrics()
+    #data = get_lyrics()
+    data = get_sonnets()
     d, seeds = build_corpus(data)
     sonnet = generate_sonnet(d, seeds)
     print('\n'.join(sonnet))
