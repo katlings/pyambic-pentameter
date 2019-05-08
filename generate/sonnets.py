@@ -32,7 +32,7 @@ def build_lyrics_corpus():
         for line in song_data['lyrics']:
             lyrics.extend(line.split())
         
-        lyrics = [word.strip('.,()-').lower() for word in lyrics if word.strip('.,()-')]
+        lyrics = [word.strip('.,()-?!').lower() for word in lyrics if word.strip('.,()-?!')]
         word_set.update(lyrics)
         lyrics.reverse()
 
@@ -60,22 +60,36 @@ def build_lyrics_corpus():
 
 
 def generate_line(word, d):
-    line = [word]
-    syl_map = remaining_scheme(word, '01' * 5)
-    # we're looking for 10 syllables
-    # TODO - iambic syllables !!!!!!
-    # may involve backtrack
-    while syl_map:
-        options = [word for word in d[word] if valid_option(word, syl_map)]
-        random.shuffle(options)
-        if not options:
-            print('oops')
-            break
-        word = random.choice(options)
-        line.append(word)
-        syl_map = remaining_scheme(word, syl_map)
-    print(' '.join(line[::-1]))
-    return ' '.join(line[::-1])
+    words = find_with_backtrack(word, '01'*5, d)
+    if words is None:
+        print('Could not find a line with', word)
+        return words
+    return ' '.join(words[::-1])
+
+
+def find_with_backtrack(word, scansion_pattern, d):
+    if fulfills_scansion(word, scansion_pattern):
+        # success!
+        return [word]
+    if not valid_option(word, scansion_pattern):
+        return None
+
+    rest_pattern = remaining_scheme(word, scansion_pattern)
+    options = set([w for w in d[word] if valid_option(w, rest_pattern)])
+    if not options:
+        # failure!
+        return None
+
+    # otherwise, we need to keep looking
+    options = list(options)
+    random.shuffle(options)
+    for option in options:
+        rest = find_with_backtrack(option, rest_pattern, d)
+        if rest is not None:
+            return [word] + rest
+
+    # whoops
+    return None
 
 
 def memoize(f):
@@ -98,7 +112,8 @@ def find_all(word, scansion_pattern, d):
     if not valid_option(word, scansion_pattern):
         return None
 
-    options = set([w for w in d[word] if valid_option(w, scansion_pattern)])
+    rest_pattern = remaining_scheme(word, scansion_pattern)
+    options = set([w for w in d[word] if valid_option(w, rest_pattern)])
     if not options:
         # failure!
         return None
@@ -106,31 +121,7 @@ def find_all(word, scansion_pattern, d):
     completes = []
     # otherwise, we need to keep looking
     for option in options:
-        need_to_find = remaining_scheme(option, scansion_pattern)
-        all_working = find_all(option, need_to_find, d)
-        if all_working is not None:
-            completes.extend([[word] + c for c in all_working])
-    return completes
-
-
-@memoize
-def find_with_backtrack(word, scansion_pattern, d):
-    if fulfills_scansion(word, scansion_pattern):
-        # success!
-        return [[word]]
-    if not valid_option(word, scansion_pattern):
-        return None
-
-    options = set([w for w in d[word] if valid_option(w, scansion_pattern)])
-    if not options:
-        # failure!
-        return None
-
-    completes = []
-    # otherwise, we need to keep looking
-    for option in options:
-        need_to_find = remaining_scheme(option, scansion_pattern)
-        all_working = find_with_backtrack(option, need_to_find, d)
+        all_working = find_all(option, rest_pattern, d)
         if all_working is not None:
             completes.extend([[word] + c for c in all_working])
     return completes
@@ -145,10 +136,14 @@ def generate_sonnet(d, seeds):
     sonnet = []
 
     for rhyme in rhyme_sounds:
-        chosen = random.sample(seeds[rhyme], 2)
-        for seed in chosen:
-            sonnet.append(generate_line(seed, d))
-    
+        random.shuffle(seeds[rhyme])
+        lines = []
+        for seed in seeds[rhyme]:
+            lines.append(generate_line(seed, d))
+        if len(lines) < 2:
+            return None
+        sonnet.append(random.sample(lines, 2))
+
     # now shuffle the lines so the rhyme scheme is right
     sonnet[1], sonnet[2] = sonnet[2], sonnet[1]
     sonnet[5], sonnet[6] = sonnet[6], sonnet[5]
