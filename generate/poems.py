@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
 
-from functools import wraps
 import json
 import random
-
-import click
 
 from syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, potential_iambic_seed, valid_option
 
 
-def get_lyrics():
-    with open('../data/beatles_lyrics.json', 'r') as f:
+def get_beatles(filepath):
+    with open(filepath, 'r') as f:
         lyrics = json.loads(f.read())
     return [' '.join(song['lyrics']) for song in lyrics.values()]
 
 
-def get_craigslist():
-    with open('../data/craigslist.txt', 'r') as f:
+def get_craigslist(filepath):
+    with open(filepath, 'r') as f:
         text = f.read()
     return [text]
 
 
-def get_sonnets():
-    with open('../data/shakespeare_sonnets.json', 'r') as f:
+def get_shakespeare(filepath):
+    with open(filepath, 'r') as f:
         sonnets = json.loads(f.read())
     return [sonnet for sonnet in sonnets.values()]
 
@@ -198,39 +195,3 @@ def generate_haiku(d):
     haiku.append(generate_syllables(5, d, preseed=haiku[-1].split()[-1]))
 
     return '\n'.join(haiku)
-
-
-@click.command()
-@click.argument('source')
-@click.argument('poem_type')
-def main(source, poem_type):
-    data = None
-    if source == 'craigslist':
-        data = get_craigslist()
-    elif source == 'beatles':
-        data = get_lyrics()
-    elif source == 'shakespeare':
-        data = get_sonnets()
-    if data is None:
-        print('Valid sources are craigslist, beatles, and shakespeare')
-        return
-
-    d, reverse_d, seeds = build_corpus(data)
-
-    poem = None
-    if poem_type == 'sonnet':
-        poem = generate_sonnet(reverse_d, seeds)
-    elif poem_type == 'limerick':
-        poem = generate_limerick(reverse_d, seeds)
-    elif poem_type == 'haiku':
-        poem = generate_haiku(d)
-    if poem is None:
-        print ('Valid poem types are sonnet, limerick, haiku')
-        return
-
-    print(poem)
-    return poem
-
-
-if __name__ == '__main__':
-    main()
