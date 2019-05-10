@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>
+        a poem for you <3
+    </title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md my-5">
+                <h4>
+                {% for line in poem %}
+                    {{ line }}<br/>
+                {% endfor %}
+                </h4>
+            </div>
+
+            <div class="col-md my-5">
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <form action="" method="POST">
+                    <h5>
+                    I want a {{ form.style }} in the style of {{ form.source }}
+                    <input type='submit' value='go'>
+                    </h5>
+                </form>
+                <br>
+                <button onclick="window.location.href = '/';">random</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

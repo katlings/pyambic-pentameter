@@ -2,8 +2,8 @@
 
 import click
 
-from poems import (build_corpus,
-                    get_beatles, get_craigslist, get_shakespeare,
+from .poems import (build_corpus,
+                    get_beatles, get_file, get_shakespeare,
                     generate_haiku, generate_limerick, generate_sonnet)
 
 
@@ -12,14 +12,18 @@ from poems import (build_corpus,
 @click.argument('poem_type')
 def main(source, poem_type):
     data = None
-    if source == 'craigslist':
-        data = get_craigslist('data/craigslist.txt')
-    elif source == 'beatles':
+    if source == 'beatles':
         data = get_beatles('data/beatles_lyrics.json')
+    elif source == 'craigslist':
+        data = get_file('data/craigslist.txt')
+    elif source == 'hamilton':
+        data = get_file('data/hamilton-lyrics.txt')
+    elif source == 'python':
+        data = get_file('data/python-docs.txt')
     elif source == 'shakespeare':
         data = get_shakespeare('data/shakespeare_sonnets.json')
     if data is None:
-        print('Valid sources are craigslist, beatles, shakespeare')
+        print('Valid sources are craigslist, beatles, python, shakespeare')
         return
 
     d, reverse_d, seeds = build_corpus(data)

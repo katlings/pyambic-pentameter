@@ -65,5 +65,8 @@ target/
 #Credentials
 creds.json
 
-#Pyenv
+# Pyenv
 .python-version
+
+# vim
+*.swp

@@ -1,25 +1,30 @@
-from flask import Flask
+from flask import Flask, render_template, request
 app = Flask(__name__)
+app.config.update(WTF_CSRF_ENABLED=False)
 
-from poems import (build_corpus,
-                   get_beatles, get_craigslist, get_shakespeare,
-                   generate_haiku, generate_limerick, generate_sonnet)
+import random
 
-beatles_data = get_beatles('data/beatles_lyrics.json')
-b_dict, b_revdict, b_seeds = build_corpus(beatles_data)
+from forms import GeneratePoemForm
+from generate import text_sources, poem_styles
 
-craigslist_data = get_craigslist('data/craigslist.txt')
-c_dict, c_revdict, c_seeds = build_corpus(craigslist_data)
 
-shakespeare_data = get_shakespeare('data/shakespeare_sonnets.json')
-s_dict, s_revdict, s_seeds = build_corpus(shakespeare_data)
-
-@app.route("/")
-def hello():
-    return "Hello World!"
-
-@app.route('/generate')
+@app.route('/', methods=['GET', 'POST'])
 def generate_page():
-    'i want a <> in the style of <>'
-    'again! | i want'
-    return generate_limerick(b_revdict, b_seeds)
+    form = GeneratePoemForm()
+    print(form.validate())
+    print(form.errors)
+
+    if form.validate_on_submit():
+        d, rev_d, seeds = text_sources[form.source.data]
+        generate = poem_styles[form.style.data]
+    else:
+        source = random.choice(list(text_sources.keys()))
+        form.source.data = source
+        d, rev_d, seeds = text_sources[source]
+        style = random.choice(list(poem_styles.keys()))
+        generate = poem_styles[style]
+        form.style.data = style
+
+    poem = generate(d=d, rev_d=rev_d, seeds=seeds)
+    print(poem)
+    return render_template('generate.html', form=form, poem=poem)

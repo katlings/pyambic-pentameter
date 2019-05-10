@@ -3,7 +3,7 @@
 import json
 import random
 
-from syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, potential_iambic_seed, valid_option
+from .syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, potential_iambic_seed, valid_option
 
 
 def get_beatles(filepath):
@@ -12,7 +12,7 @@ def get_beatles(filepath):
     return [' '.join(song['lyrics']) for song in lyrics.values()]
 
 
-def get_craigslist(filepath):
+def get_file(filepath):
     with open(filepath, 'r') as f:
         text = f.read()
     return [text]
@@ -141,12 +141,12 @@ def generate_syllables(num_syllables, d, preseed=None):
         if preseed is None:
             seed = random.choice(list(d.keys()))
         else:
-            seed = random.choice(d[preseed])
+            seed = random.choice(d.get(preseed, list(d.keys())))
         line = find_syllables_with_backtrack(seed, num_syllables, d)
     return ' '.join(line)
 
 
-def generate_sonnet(d, seeds):
+def generate_sonnet(rev_d, seeds, **kwargs):
     # start by picking 7 pairs of rhyming words
     # then generate backwards for the right number of syllables
 
@@ -154,7 +154,7 @@ def generate_sonnet(d, seeds):
 
     while len(sonnet) < 14:
         rhyme_sound = random.choice(list(seeds.keys()))
-        lines = generate_iambic(seeds[rhyme_sound], d)
+        lines = generate_iambic(seeds[rhyme_sound], rev_d)
         if lines is not None:
             sonnet.extend(lines)
 
@@ -168,30 +168,30 @@ def generate_sonnet(d, seeds):
     sonnet.insert(9, '')
     sonnet.insert(14, '')
 
-    return '\n'.join(sonnet)
+    return sonnet
 
 
-def generate_limerick(d, seeds):
+def generate_limerick(rev_d, seeds, **kwargs):
     # generate 3 of one pattern and 2 of another
     triplet = None
     while triplet is None:
         rhyme_sound = random.choice(list(seeds.keys()))
-        triplet = generate_pattern(seeds[rhyme_sound], '01101101', d, k=3)
+        triplet = generate_pattern(seeds[rhyme_sound], '01101101', rev_d, k=3)
     couplet = None
     while couplet is None:
         rhyme_sound = random.choice(list(seeds.keys()))
-        couplet = generate_pattern(seeds[rhyme_sound], '01101', d)
+        couplet = generate_pattern(seeds[rhyme_sound], '01101', rev_d)
 
     limerick = triplet[:2] + couplet + [triplet[2]]
 
-    return '\n'.join(limerick)
+    return limerick
 
 
-def generate_haiku(d):
+def generate_haiku(d, **kwargs):
     haiku = []
 
     haiku.append(generate_syllables(5, d))
     haiku.append(generate_syllables(7, d, preseed=haiku[-1].split()[-1]))
     haiku.append(generate_syllables(5, d, preseed=haiku[-1].split()[-1]))
 
-    return '\n'.join(haiku)
+    return haiku
