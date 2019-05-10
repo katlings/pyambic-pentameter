@@ -36,6 +36,11 @@ def count_vowel_groups(word):
     if len(word) >= 2 and word[-1] == 'e' and word[-2] not in vowels:
         syllables -= 1
 
+    # special case for anything ending in "n't" that isn't "don't"
+    # we give that an extra syllable
+    if word.endswith("nt") and word != "dont":
+        syllables += 1
+
     return syllables
 
 
