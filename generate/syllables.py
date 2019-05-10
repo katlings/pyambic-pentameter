@@ -8,11 +8,14 @@ from nltk.corpus import cmudict
 d = cmudict.dict()
 
 
-def alphanum(s):
-    return re.sub(r'[^a-z]+', '', s.lower())
+def clean_word(s):
+    # we are actually gonna leave internal 's in for contraction purposes and
+    # _s and .s in for "pronouncing code" purposes
+    return re.sub(r"[^a-z_\.']+", '', s.lower().strip("'"))
 
 
 def count_vowel_groups(word):
+
     # this is a first order approximation of number of syllables.
     # it won't be correct on  e.g. aria, Julia, praying, antiestablishment
     vowels = 'aeiouy'
@@ -36,17 +39,21 @@ def count_vowel_groups(word):
     if len(word) >= 2 and word[-1] == 'e' and word[-2] not in vowels:
         syllables -= 1
 
-    # special case for anything ending in "n't" that isn't "don't"
-    # we give that an extra syllable
-    if word.endswith("nt") and word != "dont":
-        syllables += 1
-
     return syllables
 
 
 def count_syllables(word):
+    # if we're looking at, say, a snake case variable name
+    if '_' in word:
+        return sum([count_syllables(w) for w in word.split('_')])
+
+    # or some other code stuff. we'll probably be pronouncing the . as 'dot'
+    if '.' in word:
+        return sum([count_syllables(w) for w in word.split('.')]) + len(word.split('.')) - 1
+
     if not word in d:
         return count_vowel_groups(word)
+
     sounds = d[word][0]
     syllables = 0
     for s in sounds:
@@ -57,7 +64,7 @@ def count_syllables(word):
 
 def get_syllable_stress(word):
     ends_with_ing = word.endswith("in'")
-    word = alphanum(word)
+    word = clean_word(word)
     stresses_options = set()
 
     # special case for e.g. singin', prayin'. a common transcription in written lyrics
