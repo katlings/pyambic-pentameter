@@ -76,7 +76,7 @@ def find_scansion_with_backtrack(word, scansion_pattern, d):
         return None
 
     rest_pattern = remaining_scheme(word, scansion_pattern)
-    options = set([w for w in d[word] if valid_option(w, rest_pattern)])
+    options = set([w for w in d.get(word, []) if valid_option(w, rest_pattern)])
     if not options:
         # failure!
         return None
@@ -104,7 +104,7 @@ def find_syllables_with_backtrack(word, num_syllables, d):
         return None
 
     remaining_syllables = num_syllables - word_syllables
-    options = set([w for w in d[word] if count_syllables(w) <= remaining_syllables])
+    options = set([w for w in d.get(word, []) if count_syllables(w) <= remaining_syllables])
     if not options:
         # failure!
         return None
