@@ -73,7 +73,7 @@ def get_syllable_stress(word):
         word = word + 'g'
 
     if not word in d:
-        syllables = count_vowel_groups(word)
+        syllables = count_syllables(word)
         # return '000' and '111' so it fingerprints to 'xxx'
         stresses_options.add('0'*syllables)
         stresses_options.add('1'*syllables)
