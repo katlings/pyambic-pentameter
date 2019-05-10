@@ -31,7 +31,8 @@ def build_corpus(data):
     word_set = set()
 
     for text in data:
-        words = [word.strip('.,()-?!":').lower() for word in text.split() if word.strip('.,()-?!":')]
+        strip_chars = '.,()-?!":*'
+        words = [word.strip(strip_chars).lower() for word in text.split() if word.strip(strip_chars)]
         word_set.update(words)
 
         for i, word in enumerate(words[:-1]):
