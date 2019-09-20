@@ -210,6 +210,7 @@ def generate_raven_verse(rev_d, seeds, **kwargs):
     while longs is None or shorts is None:
         rhyme_sound = random.choice(list(seeds.keys()))
         longs = generate_pattern(seeds[rhyme_sound], '101010101010101', rev_d, k=2)
+        random.shuffle(seeds[rhyme_sound])
         shorts = generate_pattern(seeds[rhyme_sound], '1010101', rev_d, k=2)
     print(first_row, intermediates, longs, shorts)
 
