@@ -1,5 +1,6 @@
 from .poems import (build_corpus, get_beatles, get_file, get_shakespeare,
-                   generate_haiku, generate_limerick, generate_sonnet)
+                    generate_haiku, generate_limerick, generate_raven_verse,
+                    generate_sonnet)
 
 text_sources = {}
 
@@ -23,4 +24,5 @@ poem_styles = {}
 
 poem_styles['haiku'] = generate_haiku
 poem_styles['limerick'] = generate_limerick
+poem_styles['raven'] = generate_raven_verse
 poem_styles['sonnet'] = generate_sonnet

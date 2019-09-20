@@ -188,6 +188,41 @@ def generate_limerick(rev_d, seeds, **kwargs):
     return limerick
 
 
+def generate_raven_verse(rev_d, seeds, **kwargs):
+    """
+    short1 short1
+    long2x
+    short3 short3
+    short3 short2x
+    long2x
+    short2x
+    """
+    first_row = None
+    while first_row is None:
+        rhyme_sound = random.choice(list(seeds.keys()))
+        first_row = generate_pattern(seeds[rhyme_sound], '10101010', rev_d, k=2)
+    intermediates = None
+    while intermediates is None:
+        rhyme_sound = random.choice(list(seeds.keys()))
+        intermediates = generate_pattern(seeds[rhyme_sound], '10101010', rev_d, k=3)
+    longs = None
+    shorts = None
+    while longs is None or shorts is None:
+        rhyme_sound = random.choice(list(seeds.keys()))
+        longs = generate_pattern(seeds[rhyme_sound], '101010101010101', rev_d, k=2)
+        shorts = generate_pattern(seeds[rhyme_sound], '1010101', rev_d, k=2)
+    print(first_row, intermediates, longs, shorts)
+
+    verse = [first_row[0] + ' ' + first_row[1],
+             longs[0],
+             intermediates[0] + ' ' + intermediates[1],
+             intermediates[2] + ' ' +  shorts[0],
+             longs[1],
+             shorts[1]]
+
+    return verse
+
+
 def generate_haiku(d, **kwargs):
     haiku = []
 
