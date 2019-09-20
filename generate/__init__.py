@@ -24,5 +24,5 @@ poem_styles = {}
 
 poem_styles['haiku'] = generate_haiku
 poem_styles['limerick'] = generate_limerick
-poem_styles['raven'] = generate_raven_verse
+poem_styles['raven_verse'] = generate_raven_verse
 poem_styles['sonnet'] = generate_sonnet
