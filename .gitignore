@@ -70,3 +70,6 @@ creds.json
 
 # vim
 *.swp
+
+# Copyrighted or large text
+generate/data/*
