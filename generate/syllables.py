@@ -10,24 +10,30 @@ d = cmudict.dict()
 
 def clean_word(s):
     # we are actually gonna leave internal 's in for contraction purposes and
-    # _s and .s in for "pronouncing code" purposes
-    return re.sub(r"[^a-z_\.']+", '', s.lower().strip("'"))
+    # _s and .s in for "pronouncing code" purposes, as well as numbers
+    return re.sub(r"[^a-z0-9_\.']+", '', s.lower().strip("'"))
 
 
 def count_vowel_groups(word):
-
     # this is a first order approximation of number of syllables.
     # it won't be correct on  e.g. aria, Julia, praying, antiestablishment
+
     vowels = 'aeiouy'
+    digits = '0123456789'
 
     # special case for no vowels - maybe it's an acronym. we can say each
-    # letter individually and they're probably all one syllable. fuck w anyway
+    # letter individually and they're probably all one syllable (except w)
     if all(vowel not in word for vowel in vowels):
-        return len(word)
+        return len(word) + 2 * word.count('w') + word.count('7') + word.count('0')
 
     syllables = 0
     last_seen_consonant = True
     for letter in word:
+        if letter in digits:
+            # just say the number. maybe in the future we'll account for
+            # like '100' pronunciation
+            syllables += 2 if letter in '07' else 1
+            last_seen_consonant = True
         if letter not in vowels:
             last_seen_consonant = True
         else:
