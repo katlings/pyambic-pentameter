@@ -18,6 +18,8 @@ def clean_word(s):
 def count_vowel_groups(word):
     # this is a first order approximation of number of syllables.
     # it won't be correct on  e.g. aria, Julia, praying, antiestablishment
+    if not word:
+        return 0
 
     vowels = 'aeiouy'
     digits = '0123456789'
