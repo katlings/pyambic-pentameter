@@ -1,0 +1,6 @@
+Click==7.0
+Flask==1.0.2
+ipython==7.5.0
+Jinja2==2.10.1
+nltk==3.4.1
+num2words==0.5.10
