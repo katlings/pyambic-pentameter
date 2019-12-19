@@ -53,6 +53,9 @@ def count_vowel_groups(word):
 
 
 def count_syllables(word):
+    if ' ' in word:
+        return sum([count_syllables(w) for w in word.split()])
+
     # if we're looking at, say, a snake case variable name
     if '_' in word:
         return sum([count_syllables(w) for w in word.split('_')])
