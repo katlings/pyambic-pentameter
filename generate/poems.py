@@ -147,83 +147,6 @@ def generate_syllables(num_syllables, d, preseed=None):
     return ' '.join(line)
 
 
-def generate_sonnet(rev_d, seeds, **kwargs):
-    # start by picking 7 pairs of rhyming words
-    # then generate backwards for the right number of syllables
-
-    sonnet = []
-
-    while len(sonnet) < 14:
-        rhyme_sound = random.choice(list(seeds.keys()))
-        lines = generate_iambic(seeds[rhyme_sound], rev_d)
-        if lines is not None:
-            sonnet.extend(lines)
-
-    # now shuffle the lines so the rhyme scheme is right
-    sonnet[1], sonnet[2] = sonnet[2], sonnet[1]
-    sonnet[5], sonnet[6] = sonnet[6], sonnet[5]
-    sonnet[9], sonnet[10] = sonnet[10], sonnet[9]
-    
-    # and add breaks between stanzas
-    sonnet.insert(4, '')
-    sonnet.insert(9, '')
-    sonnet.insert(14, '')
-
-    return sonnet
-
-
-def generate_limerick(rev_d, seeds, **kwargs):
-    # generate 3 of one pattern and 2 of another
-    triplet = None
-    while triplet is None:
-        rhyme_sound = random.choice(list(seeds.keys()))
-        triplet = generate_pattern(seeds[rhyme_sound], '01101101', rev_d, k=3)
-    couplet = None
-    while couplet is None:
-        rhyme_sound = random.choice(list(seeds.keys()))
-        couplet = generate_pattern(seeds[rhyme_sound], '01101', rev_d)
-
-    limerick = triplet[:2] + couplet + [triplet[2]]
-
-    return limerick
-
-
-def generate_raven_verse(rev_d, seeds, **kwargs):
-    """
-    short1 short1
-    long2x
-    short3 short3
-    short3 short2x
-    long2x
-    short2x
-    """
-    first_row = None
-    while first_row is None:
-        rhyme_sound = random.choice(list(seeds.keys()))
-        first_row = generate_pattern(seeds[rhyme_sound], '10101010', rev_d, k=2)
-    intermediates = None
-    while intermediates is None:
-        rhyme_sound = random.choice(list(seeds.keys()))
-        intermediates = generate_pattern(seeds[rhyme_sound], '10101010', rev_d, k=3)
-    longs = None
-    shorts = None
-    while longs is None or shorts is None:
-        rhyme_sound = random.choice(list(seeds.keys()))
-        longs = generate_pattern(seeds[rhyme_sound], '101010101010101', rev_d, k=2)
-        random.shuffle(seeds[rhyme_sound])
-        shorts = generate_pattern(seeds[rhyme_sound], '1010101', rev_d, k=2)
-    print(first_row, intermediates, longs, shorts)
-
-    verse = [first_row[0] + ' ' + first_row[1],
-             longs[0],
-             intermediates[0] + ' ' + intermediates[1],
-             intermediates[2] + ' ' +  shorts[0],
-             longs[1],
-             shorts[1]]
-
-    return verse
-
-
 def generate_haiku(d, **kwargs):
     haiku = []
 
@@ -232,3 +155,96 @@ def generate_haiku(d, **kwargs):
     haiku.append(generate_syllables(5, d, preseed=haiku[-1].split()[-1]))
 
     return haiku
+
+
+def generate_poem(pattern, definitions, rev_d, seeds, **kwargs):
+    '''
+    Build your own poem
+
+    pattern: a string describing a rhyme pattern e.g., ABABCC. Use a space
+        to indicate line breaks
+    definitions: a dictionary with keys corresponding to each rhyme line e.g.
+        'A' and values describing the syllable pattern e.g. '01101101'
+    '''
+
+    if not all(p in definitions for p in pattern if p != ' '):
+        raise ValueError('Must define all rhymes used')
+
+    # Generate the appropriate number of matching lines for each pattern
+    distinct_rhymes = set(pattern)
+
+    rhymes = {}
+
+    for p in distinct_rhymes:
+        if p == ' ':
+            continue
+
+        rhyme = None
+        while rhyme is None:
+            rhyme_sound = random.choice(list(seeds.keys()))
+            rhyme = generate_pattern(seeds[rhyme_sound], definitions[p], rev_d, k=pattern.count(p))
+        rhymes[p] = rhyme
+
+    # Assemble them
+    output = []
+    line_output = []
+
+    for rhyme in pattern:
+        if rhyme == ' ':
+            output.append(' '.join(line_output))
+            line_output = []
+        else:
+            line_output.append(rhymes[rhyme].pop())
+
+    output.append(' '.join(line_output))
+
+    return output
+
+
+def generate_raven_verse(rev_d, seeds, **kwargs):
+    segment = '10101010'
+    segment_short  = '1010101'
+
+    return generate_poem(
+        'AA BC DD DC EC C',
+        {
+            'A': segment,
+            'B': segment,
+            'C': segment_short,
+            'D': segment,
+            'E': segment,
+        },
+        rev_d,
+        seeds,
+        **kwargs)
+
+
+def generate_limerick(rev_d, seeds, **kwargs):
+    return generate_poem(
+        'A A B B A',
+        {
+            'A': '01101101',
+            'B': '01101',
+        },
+        rev_d,
+        seeds,
+        **kwargs)
+
+
+def generate_sonnet(rev_d, seeds, **kwargs):
+    i_p = '01' * 5  # iambic pentameter
+
+    return generate_poem(
+        'A B A B  C D C D  E F E F  G G',
+        {
+            'A': i_p,
+            'B': i_p,
+            'C': i_p,
+            'D': i_p,
+            'E': i_p,
+            'F': i_p,
+            'G': i_p,
+        },
+        rev_d,
+        seeds,
+        **kwargs)

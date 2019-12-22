@@ -63,3 +63,7 @@ def generate_page():
     app.logger.info(poem)
     print(poem)
     return render_template('generate.html', form=form, poem=poem)
+
+
+if __name__ == '__main__':
+    app.run()
