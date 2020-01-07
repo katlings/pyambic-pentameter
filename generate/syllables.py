@@ -156,7 +156,7 @@ def rhyme_fingerprint(word):
         fingerprint.append(sound)
         # digits designate emphasis in syllables; we've found a syllable,
         # more or less
-        if '0' in sound or '1' in sound or '2' in sound:
+        if '1' in sound or '2' in sound:
             break
         
     return tuple(fingerprint[::-1])

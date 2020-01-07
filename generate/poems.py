@@ -3,7 +3,7 @@
 import json
 import random
 
-from .syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, potential_iambic_seed, valid_option
+from .syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, valid_option
 
 
 def get_beatles(filepath):
@@ -25,7 +25,13 @@ def get_shakespeare(filepath):
 
 
 def build_corpus(data):
-    # data is a list of seed strings; each chunk of text may be unrelated (e.g. lyrics from different songs)
+    '''
+    builds and returns a Markov dictionary, a reverse dictionary, and a set of
+    rhymes from the input text
+
+    data is a list of seed strings; each chunk of text may be unrelated (e.g.
+    lyrics from different songs)
+    '''
     d = {}
     reverse_d = {}
     word_set = set()
@@ -54,9 +60,7 @@ def build_corpus(data):
     seeds = {}
     for word in word_set:
         # we could reduce this set further by checking for the right stress for the
-        # pattern, but iambic isn't necessarily the right one
-#       if not potential_iambic_seed(word):
-#           continue
+        # syllable pattern
         rf = rhyme_fingerprint(word)
         if rf is None:
             continue
@@ -130,10 +134,6 @@ def generate_pattern(seed_words, pattern, d, k=2):
             return lines
 
     return None
-
-
-def generate_iambic(seed_words, d, k=2, meter=5):
-    return generate_pattern(seed_words, '01'*meter, d, k)
 
 
 def generate_syllables(num_syllables, d, preseed=None):
