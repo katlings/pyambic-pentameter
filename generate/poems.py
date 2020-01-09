@@ -223,8 +223,8 @@ def generate_limerick(rev_d, seeds, **kwargs):
     return generate_poem(
         'A A B B A',
         {
-            'A': '01101101',
-            'B': '01101',
+            'A': '01001001',
+            'B': '01001',
         },
         rev_d,
         seeds,
