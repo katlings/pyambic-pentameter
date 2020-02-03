@@ -14,6 +14,10 @@ class PoemMaker:
         self.set_up = False
 
     def setup(self):
+        '''
+        Run once before generating any poems to build Markov and rhyme models
+        for every data source found in the given data folder
+        '''
         texts = os.listdir(DATA_FOLDER)
 
         for filename in texts:
