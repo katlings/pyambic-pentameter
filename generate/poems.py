@@ -89,7 +89,7 @@ def find_scansion_with_backtrack(word, scansion_pattern, d):
         rest = find_scansion_with_backtrack(option, rest_pattern, d)
         if rest is not None:
             # a good way to debug
-            print(' '.join([word] + rest))
+            #print(' '.join([word] + rest))
             return [word] + rest
 
     # whoops
