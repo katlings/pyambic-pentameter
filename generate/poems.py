@@ -6,25 +6,21 @@ import random
 from .syllables import count_syllables, fulfills_scansion, remaining_scheme, rhyme_fingerprint, valid_option
 
 
-def get_beatles(filepath):
-    with open(filepath, 'r') as f:
-        lyrics = json.loads(f.read())
-    return [' '.join(song['lyrics']) for song in lyrics.values()]
-
-
 def get_file(filepath):
+    '''
+    Read a file and return a list of chunks of text, separated by paragraph
+    breaks (two empty lines in a row).
+
+    When making a Markov model from the output, text chunks will be considered
+    separate (they will all go into the model, but the last word of one chunk
+    will not be connected to the first word of the next).
+    '''
     with open(filepath, 'r') as f:
         text = f.read()
-    return [text]
+    return text.split('\n\n')
 
 
-def get_shakespeare(filepath):
-    with open(filepath, 'r') as f:
-        sonnets = json.loads(f.read())
-    return [sonnet for sonnet in sonnets.values()]
-
-
-def build_corpus(data):
+def build_models(data):
     '''
     builds and returns a Markov dictionary, a reverse dictionary, and a set of
     rhymes from the input text
@@ -93,7 +89,7 @@ def find_scansion_with_backtrack(word, scansion_pattern, d):
         rest = find_scansion_with_backtrack(option, rest_pattern, d)
         if rest is not None:
             # a good way to debug
-            #print(' '.join([word] + rest))
+            print(' '.join([word] + rest))
             return [word] + rest
 
     # whoops
