@@ -1,9 +1,19 @@
-from flask import Flask, render_template, request
-app = Flask(__name__)
-app.config.update(WTF_CSRF_ENABLED=False)
-
 import logging
 from logging.handlers import RotatingFileHandler
+import random
+import re
+
+from flask import Flask, render_template, request
+from flask_wtf import FlaskForm
+from wtforms import SelectField
+
+from .generate.generator import PoemMaker
+
+pm = PoemMaker()
+pm.setup()
+
+app = Flask(__name__)
+app.config.update(WTF_CSRF_ENABLED=False)
 
 handler = RotatingFileHandler('poems.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.INFO)
@@ -11,11 +21,14 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
-import random
 
-from forms import GeneratePoemForm
-from generate import text_sources, poem_styles
-from tools.analyze import alphanum
+def alphanum(s):
+    return re.sub(r'[^a-z]+', '', s.lower())
+
+
+class GeneratePoemForm(FlaskForm):
+    source = SelectField('Source', choices=[(k, k) for k in pm.text_sources.keys()])
+    style = SelectField('Style', choices=[(k, k) for k in pm.poem_styles.keys()])
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -33,33 +46,29 @@ def generate_page():
         app.logger.warning(form.errors)
 
     if form.validate_on_submit():
-        d, rev_d, seeds = text_sources[form.source.data]
-        generate = poem_styles[form.style.data]
+        source = form.source.data
+        style = form.style.data
     else:
         try:
             source_ask = request.args.get('source') or request.args.get('style')
-            source_param = valid_param(source_ask, text_sources)
+            source_param = valid_param(source_ask, pm.text_sources)
             if source_param is not None:
                 source = source_param
             else:
-                source = random.choice(list(text_sources.keys()))
+                source = random.choice(list(pm.text_sources.keys()))
             form.source.data = source
-            d, rev_d, seeds = text_sources[source]
 
             style_ask = request.args.get('poem') or request.args.get('style')
-            style_param = valid_param(style_ask, poem_styles)
+            style_param = valid_param(style_ask, pm.poem_styles)
             if style_param is not None:
                 style = style_param
             else:
-                style = random.choice(list(poem_styles.keys()))
-            generate = poem_styles[style]
+                style = random.choice(list(pm.poem_styles.keys()))
             form.style.data = style
         except:
-            app.logger.info('what the hell')
-            app.logger.error('shit')
-            app.logger.exception('shit')
+            app.logger.exception('Failed to select source and style')
 
-    poem = generate(d=d, rev_d=rev_d, seeds=seeds)
+    poem = pm.generate(source, style)
     app.logger.info(poem)
     print(poem)
     return render_template('generate.html', form=form, poem=poem)
