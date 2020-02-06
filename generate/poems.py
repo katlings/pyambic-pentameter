@@ -55,8 +55,6 @@ def build_models(data):
     # we can seed off of words that have at least one matching rhyme
     seeds = {}
     for word in word_set:
-        # we could reduce this set further by checking for the right stress for the
-        # syllable pattern
         rf = rhyme_fingerprint(word)
         if rf is None:
             continue
@@ -168,13 +166,12 @@ def generate_poem(pattern, definitions, rev_d, seeds, **kwargs):
 
     # Generate the appropriate number of matching lines for each pattern
     distinct_rhymes = set(pattern)
+    if ' ' in distinct_rhymes:
+        distinct_rhymes.remove(' ')
 
     rhymes = {}
 
     for p in distinct_rhymes:
-        if p == ' ':
-            continue
-
         rhyme = None
         while rhyme is None:
             rhyme_sound = random.choice(list(seeds.keys()))

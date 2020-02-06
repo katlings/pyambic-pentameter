@@ -126,7 +126,7 @@ def get_syllable_stress(word):
                 if '1' in syllable:
                     stress.append('1')
                 if '2' in syllable:  # secondary stress
-                    stress.append('2')
+                    stress.append('x')
                 if '0' in syllable:
                     stress.append('0')
             stresses_options.add(''.join(stress))

@@ -21,6 +21,8 @@ class PoemMaker:
         texts = os.listdir(DATA_FOLDER)
 
         for filename in texts:
+            if filename.startswith('.'):
+                continue
             # strip '.txt' from filename for the string key
             lines = get_file
             self.text_sources[filename[:-4]] = build_models(get_file(os.path.join(DATA_FOLDER, filename)))
