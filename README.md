@@ -15,4 +15,6 @@ Run with `flask run`.
 
 (May require some futzing with relative/absolute imports depending on setup.)
 
+(You may need to `python -c "import nltk; nltk.download('cmudict')"` if you get the runtime error `Resource cmudict not found.`
+
 Browse to `http://localhost:5000` to read poems!
