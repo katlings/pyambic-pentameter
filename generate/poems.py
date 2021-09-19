@@ -33,7 +33,7 @@ def build_models(data):
     word_set = set()
 
     for text in data:
-        strip_chars = '.,()-?!":*'
+        strip_chars = '.,()-?!":*;'
         words = [word.strip(strip_chars).lower() for word in text.split() if word.strip(strip_chars)]
         word_set.update(words)
 
