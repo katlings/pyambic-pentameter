@@ -1,3 +1,4 @@
+from functools import lru_cache
 import os
 
 from .poems import (build_models, get_file, generate_haiku, generate_limerick,
@@ -44,6 +45,12 @@ class PoemMaker:
         d, rev_d, seeds = self.text_sources[source]
         return '\n'.join(self.poem_styles[style](d=d, rev_d=rev_d, seeds=seeds))
 
+    # whoops - can't cache build_models because the input is an unhashable list
+    # so give it a wrapper
+    @lru_cache(maxsize=32)
+    def build_custom_models(self, source_text):
+        return build_models([source_text])
+
     def generate_custom(self, source_text, style):
-        d, rev_d, seeds = build_models([source_text])
+        d, rev_d, seeds = self.build_custom_models(source_text)
         return '\n'.join(self.poem_styles[style](d=d, rev_d=rev_d, seeds=seeds))
