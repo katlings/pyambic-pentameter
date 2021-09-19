@@ -15,8 +15,9 @@
         <form action="" method="POST">
           {{ form.csrf_token }}
           <div class="form-group my-3">
-            <label for="source_text" class="mb-3">Copy-paste your text! The longer it is, the better and more varied results will be. It will be sanitized with most punctuation and all capitalization and whitespace stripped.</label>
-            {{ form.source_text(class_="form-control") }}
+            <label for="source_text">Copy-paste your text! The longer it is, the better and more varied results will be. It will be sanitized with most punctuation and all capitalization and whitespace stripped.</label>
+            {{ form.source_text(class_="form-control my-3") }}
+            <p class="text-secondary">Words: <span id="numWords">0</span></p>
           </div>
           <div class="form-group my-3">
             I want a {{ form.poem_format }}
@@ -33,11 +34,18 @@
     </div>
   </div>
   <footer class="page-footer fixed-bottom font-small text-center text-secondary">
-  <p>
-    made with love by <a class="text-info" href="https://www.twitter.com/hartknyx">@hartknyx</a> |
-    open source at <a class="text-info" href="https://www.github.com/katlings/pyambic-pentameter">github</a> |
-    <a href="/">home</a>
-  </p>
+    <p>
+      made with love by <a class="text-info" href="https://www.twitter.com/hartknyx">@hartknyx</a> |
+      open source at <a class="text-info" href="https://www.github.com/katlings/pyambic-pentameter">github</a> |
+      <a href="/">home</a>
+    </p>
   </footer>
+
+  <script>
+    document.querySelector('#source_text').addEventListener('keyup', function countWords() {
+      let wordCount = this.value.trim().split(/\s+/).length;
+      document.querySelector('#numWords').innerText = wordCount;
+    });
+  </script>
 </body>
 </html>
