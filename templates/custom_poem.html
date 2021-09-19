@@ -19,7 +19,7 @@
       <div class="col">
         <form action="" method="POST">
           {{ form.csrf_token }}
-          {{ form.source_text }}
+          {{ form.source_text(class_="d-none") }}
           <div class="form-group my-3">
             I want a {{ form.poem_format }}
           </div>

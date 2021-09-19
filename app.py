@@ -90,8 +90,6 @@ def upload():
         source_text = form.source_text.data
         poem_format = form.poem_format.data
 
-        form.source_text.render_kw['hidden'] = True
-
         try:
             poem = pm.generate_custom(source_text, poem_format)
             app.logger.info(poem)
@@ -100,8 +98,6 @@ def upload():
             poem="Sorry! I couldn't find a valid poem with that input. :("
         return render_template('custom_poem.html', form=form, poem=poem)
 
-    if 'hidden' in form.source_text.render_kw:
-        del form.source_text.render_kw['hidden']
     return render_template('custom.html', form=form)
 
 
