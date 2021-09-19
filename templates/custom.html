@@ -43,7 +43,7 @@
 
   <script>
     document.querySelector('#source_text').addEventListener('keyup', function countWords() {
-      let wordCount = this.value.trim().split(/\s+/).length;
+      let wordCount = this.value.trim() == '' ? 0 : this.value.trim().split(/\s+/).length;
       document.querySelector('#numWords').innerText = wordCount;
     });
   </script>
