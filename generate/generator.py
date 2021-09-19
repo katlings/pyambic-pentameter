@@ -2,7 +2,7 @@ from functools import lru_cache
 import os
 
 from .poems import (build_models, get_file, generate_haiku, generate_limerick,
-                            generate_raven_verse, generate_sonnet)
+                            generate_raven_verse, generate_sonnet, generate_common_meter)
 
 DATA_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
@@ -29,8 +29,9 @@ class PoemMaker:
 
         self.poem_styles['haiku'] = generate_haiku
         self.poem_styles['limerick'] = generate_limerick
-        self.poem_styles['raven_verse'] = generate_raven_verse
+        self.poem_styles['raven verse'] = generate_raven_verse
         self.poem_styles['sonnet'] = generate_sonnet
+        self.poem_styles['common meter'] = generate_common_meter
 
         self.set_up = True
 

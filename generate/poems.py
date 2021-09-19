@@ -241,3 +241,15 @@ def generate_sonnet(rev_d, seeds, **kwargs):
         rev_d,
         seeds,
         **kwargs)
+
+
+def generate_common_meter(rev_d, seeds, **kwargs):
+    return generate_poem(
+        'A B A B',
+        {
+            'A': '01' * 4,
+            'B': '01' * 3,
+        },
+        rev_d,
+        seeds,
+        **kwargs)
