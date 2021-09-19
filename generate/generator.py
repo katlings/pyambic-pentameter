@@ -43,3 +43,7 @@ class PoemMaker:
 
         d, rev_d, seeds = self.text_sources[source]
         return '\n'.join(self.poem_styles[style](d=d, rev_d=rev_d, seeds=seeds))
+
+    def generate_custom(self, source_text, style):
+        d, rev_d, seeds = build_models([source_text])
+        return '\n'.join(self.poem_styles[style](d=d, rev_d=rev_d, seeds=seeds))
