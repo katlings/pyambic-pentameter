@@ -20,6 +20,7 @@
         <div class="row my-3">
           <div class="col">
             <form action="" method="POST">
+              {{ form.csrf_token }}
               <h5>
               I want a {{ form.style }} in the style of {{ form.source }}
               <input type='submit' value='go'>

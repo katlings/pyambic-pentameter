@@ -13,6 +13,7 @@
     <div class="row my-5 text-center">
       <div class="col">
         <form action="" method="POST">
+          {{ form.csrf_token }}
           <div class="form-group my-3">
             <label for="source_text" class="mb-3">Copy-paste your text! The longer it is, the better and more varied results will be. It will be sanitized with most punctuation and all capitalization and whitespace stripped.</label>
             {{ form.source_text }}

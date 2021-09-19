@@ -18,6 +18,7 @@
     <div class="row my-5 text-center">
       <div class="col">
         <form action="" method="POST">
+          {{ form.csrf_token }}
           {{ form.source_text }}
           <div class="form-group my-3">
             I want a {{ form.poem_format }}

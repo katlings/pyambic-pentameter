@@ -1,5 +1,6 @@
 import logging
 from logging.handlers import RotatingFileHandler
+import os
 import random
 import re
 
@@ -13,7 +14,8 @@ pm = PoemMaker()
 pm.setup()
 
 app = Flask(__name__)
-app.config.update(WTF_CSRF_ENABLED=False)
+SECRET_KEY = os.urandom(32)
+app.config['SECRET_KEY'] = SECRET_KEY
 
 handler = RotatingFileHandler('poems.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.INFO)
