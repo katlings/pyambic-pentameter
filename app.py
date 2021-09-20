@@ -86,15 +86,16 @@ def upload():
     form = UploadTextForm()
 
     if form.validate_on_submit():
-        print('asdf')
         source_text = form.source_text.data
         poem_format = form.poem_format.data
 
         try:
             poem = pm.generate_custom(source_text, poem_format)
+            if not poem:
+                raise ValueError
+            app.logger.info('custom poem!')
             app.logger.info(poem)
-            print(poem)
-        except IndexError:
+        except (IndexError, ValueError):
             poem="Sorry! I couldn't find a valid poem with that input. :("
         return render_template('custom_poem.html', form=form, poem=poem)
 

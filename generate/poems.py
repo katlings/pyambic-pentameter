@@ -172,10 +172,14 @@ def generate_poem(pattern, definitions, rev_d, seeds, **kwargs):
     rhymes = {}
 
     for p in distinct_rhymes:
+        tried_rhymes = set()
         rhyme = None
-        while rhyme is None:
+        while rhyme is None and len(tried_rhymes) < len(seeds):
             rhyme_sound = random.choice(list(seeds.keys()))
+            tried_rhymes.add(rhyme_sound)
             rhyme = generate_pattern(seeds[rhyme_sound], definitions[p], rev_d, k=pattern.count(p))
+        if len(tried_rhymes) == len(seeds) and rhyme is None:
+            return ''  # no poem found
         rhymes[p] = rhyme
 
     # Assemble them
