@@ -101,5 +101,10 @@ def upload():
     return render_template('custom.html', form=form)
 
 
+@app.route('/about')
+def about():
+    return render_template('faq.html')
+
+
 if __name__ == '__main__':
     app.run()

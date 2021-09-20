@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>
+    a poem for you <3
+  </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="row my-5">
+      <div class="col">
+        <h2 class="text-center">About this Project</h2>
+        <p class="text-center text-muted">aka infrequently asked questions</p>
+        <h5>What does this website do?</h5>
+        <p>It's software that generates random poetry (based on a source text)
+        following some common poem formats! It does its best to make sure the
+        poems it generates rhyme and follow the correct meter (stressed and
+        unstressed syllables) for the format.</p>
+        <h5>How does it work?</h5>
+        <p>The source text is analyzed, and words for the poem are strung
+        together randomly using a Markov chain strategy -- so there's an
+        awareness of neighboring words and the frequency they occur in the
+        original text. Rhyme and meter for each word are looked up using the
+        CMU Pronunciation dictionary, which offers a "word-to-sounds"
+        translation that software can interpret.</p>
+        <p>For more information, check out the <a href="https://www.youtube.com/watch?v=2ymZVpuqvSc">PyCon 2020 talk</a>!
+        <p>There's also some custom code to guess the number of syllables in a
+        word if there's a word that isn't found in the dictionary, which is mostly
+        based on the number of vowel groups in the word.</p>
+      </div>
+    </div>
+  </div>
+  <footer class="page-footer mt-5 font-small text-center text-secondary">
+  <p>
+    made with love by <a class="text-info" href="https://www.twitter.com/hartknyx">@hartknyx</a> |
+    open source at <a class="text-info" href="https://www.github.com/katlings/pyambic-pentameter">github</a> |
+    <a class="text-info" href="/">home</a>
+  </p>
+  </footer>
+</body>
+</html>
