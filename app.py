@@ -35,7 +35,7 @@ class GeneratePoemForm(FlaskForm):
 
 class UploadTextForm(FlaskForm):
     poem_format = SelectField('Format', choices=[(k, k) for k in pm.poem_styles.keys()])
-    source_text = TextAreaField('Text', render_kw={'rows': 20, 'cols': 200})
+    source_text = TextAreaField('Text', render_kw={'rows': 20})
 
 
 @app.route('/', methods=['GET', 'POST'])
